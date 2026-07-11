@@ -73,7 +73,6 @@ class OzonParser:
         search_url = self.driver.current_url
         
         while limit is None or len(data) < limit:
-            # Собираем href И цену СРАЗУ, пока карточки свежие
             candidates = []
             try:
                 cards = self.driver.find_elements(By.CSS_SELECTOR, "div.tile-root")
@@ -81,16 +80,13 @@ class OzonParser:
                 
                 for card in cards:
                     try:
-                        # Получаем ссылку
                         link_el = card.find_element(By.CSS_SELECTOR, "a[href*='/product/']")
                         href = link_el.get_attribute('href')
                         if not href or href in processed_urls:
                             continue
                         
-                        # Получаем цену - берём первый span с ценой внутри блока цены
                         price = None
                         try:
-                            # Вариант 1: блок c35_4_0-a0 -> первый span
                             price_block = card.find_element(By.CSS_SELECTOR, "div[class*='c35_4_0-a0']")
                             price_spans = price_block.find_elements(By.CSS_SELECTOR, "span[class*='tsHeadline500Medium']")
                             if price_spans:
@@ -98,7 +94,6 @@ class OzonParser:
                         except:
                             pass
                         
-                        # Вариант 2: если не нашли - пробуем другой селектор
                         if not price:
                             try:
                                 price_el = card.find_element(By.CSS_SELECTOR, "span[class*='tsHeadline500Medium']")
@@ -125,7 +120,6 @@ class OzonParser:
             else:
                 self._log(f"Кандидатов с ценой: {len(candidates)}")
             
-            # Обрабатываем подходящие по цене
             for href, price in candidates:
                 if limit and len(data) >= limit:
                     break
@@ -136,19 +130,17 @@ class OzonParser:
                     continue
                 
                 processed_urls.add(href)
-                self._log(f"✅ Подходящий товар: {price}₽ -> {href}")
+                self._log(f"Подходящий товар: {price}₽ -> {href}")
                 
                 try:
-                    # Переходим на страницу товара
                     self.driver.get(href)
                     time.sleep(2.5)
                     
                     item_data = self._parse_product_page(href, price)
                     if item_data:
                         data.append(item_data)
-                        self._log(f"✅ Собрано: {len(data)}")
+                        self._log(f"Собрано: {len(data)}")
                     
-                    # Возвращаемся к поиску
                     self.driver.get(search_url)
                     time.sleep(2.5)
                     
@@ -164,7 +156,6 @@ class OzonParser:
             if limit and len(data) >= limit:
                 break
                 
-            # Скролл для подгрузки новых карточек
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(3)
             
