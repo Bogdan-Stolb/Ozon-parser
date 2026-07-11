@@ -1,8 +1,12 @@
 установка:
-1. '''
-git clone https://github.com/Bogdan-Stolb/Ozon-parser.git
+1.
+
 '''
-2.
+git clone https://github.com/Bogdan-Stolb/Ozon-parser.git
+
+'''
+3.
+
 '''
 pip install openpyxl undetected-chromedriver selenium
 '''
